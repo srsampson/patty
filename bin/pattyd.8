@@ -1,0 +1,56 @@
+.Dd $Mdocdate$
+.Dt PATTYD 8
+.Os
+.Sh NAME
+.Nm pattyd
+.Nd AX.25 userland stack daemon
+.Sh SYNOPSIS
+.Nm
+.Op Fl f
+.Op Fl c Ar pattyd.conf
+.Nm
+.Fl s Ar patty.sock MYCALL /dev/ttyXYZ Op tioarg ...
+.Sh DESCRIPTION
+.Nm
+provides an AX.25 userland stack daemon which can be used to communicate with
+other hosts via KISS interfaces.  AX.25-based sockets are created and
+controlled by clients with remote calls to
+.Nm
+via a Unix domain socket.  Clients, in this sense, are akin to userland code,
+whereas
+.Nm
+would correspond to a kernel networking stack, and the Unix domain socket would
+be the system call interface.  Access to AX.25 sockets is provided via the
+.Xr pty 4
+driver, which provides a convenient means of interfacing existing and new
+software with AX.25.
+.Pp
+By default,
+.Nm
+will search for daemon settings, network interface descriptions, and routes to
+instantiate in
+.Xr pattyd.conf 5 .
+.Pp
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl f
+Run daemon in foreground.
+.It Fl c Ar pattyd.conf
+Specify a configuration file to load.  When this option is not specified, the
+default configuration file is
+.Pa /etc/patty/pattyd.conf .
+.It Fl s Ar patty.sock MYCALL /dev/ttyXYZ Op tioarg ...
+Run in standalone mode, without requiring a configuration file.  In this mode,
+a single interface,
+.Li kiss0 ,
+is created, with address
+.Ar MYCALL ,
+using
+.Ar /dev/ttyXYZ
+as a KISS interface, and zero or more optional
+.Op tioarg ...
+given to specify baud rate or flow control.  Valid settings are:
+.Li 1200 , 9600 , crtscts , xonxoff .
+.El
+.Sh AUTHORS
+.An XANTRONIX Development Aq Mt dev@xantronix.com

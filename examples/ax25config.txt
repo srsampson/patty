@@ -1,0 +1,5 @@
+kiss0: flags=NNNN<UP,BROADCAST,RUNNING,SIMPLEX> mtu 2048
+    ax25 WX9KIP
+    device: /dev/ttyS0
+    speed: 9600
+    status: active

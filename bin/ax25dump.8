@@ -1,0 +1,46 @@
+.Dd $Mdocdate$
+.Dt AX25DUMP 8
+.Os
+.Sh NAME
+.Nm ax25dump
+.Nd dump AX.25 traffic
+.Sh SYNOPSIS
+.Nm
+.Op Fl s Ar patty.sock
+.Fl i Ar ifname
+.Nm
+.Ar /dev/ttyXYZ Op tioarg ...
+.Nm
+.Ar file.cap
+.Sh DESCRIPTION
+.Nm
+prints out the headers and bodies of packets sent or received by an AX.25
+interface, a raw KISS TNC device, or a regular file containing KISS-framed
+AX.25 packets.
+.Pp
+When provided with a
+.Ar patty.sock
+Unix domain socket to a
+.Xr pattyd 8
+instance, and an
+.Ar ifname ,
+.Nm
+will dump all packets sent and received by
+.Ar ifname .
+.Pp
+When provided with a KISS TNC device,
+.Ar /dev/ttyXYZ ,
+with optional
+.Xr termios 4
+settings, or with a regular file,
+.Ar file.cap ,
+.Nm
+will dump all KISS-framed packets received by that device or contained in that
+file.
+.Pp
+When provided with a KISS TNC device, zero or more
+.Op tioarg ...
+may be given to specify baud or flow control.  Valid settings are:
+.Li 1200 , 9600 , crtscts , xonxoff .
+.Sh AUTHORS
+.An XANTRONIX Development Aq Mt dev@xantronix.com

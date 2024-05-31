@@ -1,0 +1,12 @@
+bin/*.o
+bin/ax25dump
+bin/pattyd
+bin/tncd
+src/*.o
+src/*.a
+src/*.dylib
+src/*.so
+src/*.so.*
+examples/connect
+examples/listen
+examples/login

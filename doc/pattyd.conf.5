@@ -1,0 +1,81 @@
+.Dd $Mdocdate$
+.Dt PATTYD 8
+.Os
+.Sh NAME
+.Nm pattyd.conf
+.Nd AX.25 daemon configuration file
+.Sh DESCRIPTION
+The
+.Nm
+file contains AX.25 network interface declarations, static routes, and daemon
+settings for
+.Xr pattyd 8 ,
+the AX.25 userland stack daemon.
+.Pp
+The
+.Nm
+file is a line-oriented configuration file, with
+.Xr sh 1
+style string quotation and backslash escapes.  The following declarations are
+supported.
+.Bl -tag -width Ds
+.It Li sock Ar patty.sock
+Specify the path of a Unix domain socket for
+.Xr pattyd 8
+to listen for client connections on.
+.It Li pid Ar /var/run/patty.pid
+Specify the path of a regular file to write the process ID of
+.Xr pattyd 8
+to, when run in forking daemon mode.
+.It Li if Ar ifname Li ax25 Ar MYCALL Li kiss Ar /dev/ttyXYZ Op tioargs ...
+Raise an interface named
+.Ar ifname ,
+with the callsign
+.Ar MYCALL
+attached to the character device
+.Ar /dev/ttyXYZ ,
+with the optional 
+.Op tioargs
+as follows:
+.Bl -tag
+.It Li baud Ar rate
+.It Li flow Ar crtscts
+.It Li flow Ar xonxoff 
+.El
+.It Li if Ar ifname Li ax25 Ar MYCALL Li aprs-is Ar args ...
+Raise an interface named
+.Ar ifname ,
+with the callsign
+.Ar MYCALL
+attached to an APRS-IS client.  The following
+.Ar args ...
+must be provided:
+.Bl -tag
+.It Li 
+.It Li host Ar host.aprs.is
+.It Li port Ar 14580
+.It Li user Ar MYCALL
+.It Li pass Ar 12345
+.It Li filter Ar spec
+.El
+.It Li route station Ar CALLSGN Li if Ar ifname Li
+Add a static route to reach
+.Ar CALLSGN
+via interface
+.Ar ifname .
+.It Li route station Ar CALLSGN Li if Ar ifname Li path Ar HOP1 Op ...
+Add a static route to reach
+.Ar CALLSGN
+via interface
+.Ar ifname ,
+repeated by
+.Ar HOP1
+.Op ... .
+.It Li route default if Ar ifname
+Set the interface
+.Ar ifname
+as the interface used to send packets from by default, when no other static
+routes exist to reach a given destination.
+.El
+.Sh AUTHORS
+.An XANTRONIX Development Aq Mt dev@xantronix.com

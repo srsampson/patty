@@ -1,0 +1,36 @@
+.Dd $Mdocdate$
+.Dt TNCD 8
+.Os
+.Sh NAME
+.Nm tncd
+.Nd create a KISS TNC from an AX.25 interface
+.Sh SYNOPSIS
+.Nm
+.Op Fl s Ar patty.sock
+.Fl i Ar ifname
+.Sh DESCRIPTION
+.Nm
+exposes a
+.Xr pattyd 8
+interface as a KISS TNC via a pseudoterminal.  This device can either be read
+from or written to.  The device can be connected to by only one process at a
+time.  However, multiple instances of
+.Nm
+can be attached to an interface simultaneously.  Each frame sent out to the
+interface, or received by the interface, is written to the KISS TNC device.
+In turn, each frame received by the KISS TNC is sent out to the interface.
+.Pp
+The
+.Fl i Ar ifname
+flag is required and must refer to the name of an interface valid on a running
+.Xr pattyd 8
+AX.25 daemon.  Optionally,
+.Op Fl s Ar patty.sock
+may be given to specify another path to a Unix domain socket for that daemon.
+When a KISS TNC device is successfully created, the pseudoterminal device name
+is printed to standard output.
+.Sh SEE ALSO
+.Xr pattyd 8 ,
+.Xr pty 4
+.Sh AUTHORS
+.An XANTRONIX Development Aq Mt dev@xantronix.com

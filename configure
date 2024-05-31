@@ -1,0 +1,210 @@
+#! /bin/sh
+
+OS=`uname -s`
+DEBUG=0
+PREFIX=/usr/local
+
+config_h_append_generic_endian() {
+    cat <<EOF >> "$1"
+
+/*
+ * Generic compatibility
+ */
+#include <endian.h>
+EOF
+}
+
+config_h_append_darwin_endian() {
+    cat <<EOF >> "$1"
+
+/*
+ * Darwin compatibility
+ */
+#include <libkern/OSByteOrder.h>
+
+#define htobe16(n) OSSwapHostToBigInt16(n)
+#define htole16(n) OSSwapHostToLittleInt16(n)
+#define be16toh(n) OSSwapBigToHostInt16(n)
+#define le16toh(n) OSSwapLittleToHostInt16(n)
+
+#define htobe32(n) OSSwapHostToBigInt32(n)
+#define htole32(n) OSSwapHostToLittleInt32(n)
+#define be32toh(n) OSSwapBigToHostInt32(n)
+#define le32toh(n) OSSwapLittleToHostInt32(n)
+
+#define htobe64(n) OSSwapHostToBigInt64(n)
+#define htole64(n) OSSwapHostToLittleInt64(n)
+#define be64toh(n) OSSwapBigToHostInt64(n)
+#define le64toh(n) OSSwapLittleToHostInt64(n)
+EOF
+}
+
+config_h_append_bsd_pty() {
+    cat <<EOF >> "$1"
+
+/*
+ * BSD openpty(3) compatibility
+ */
+#include <util.h>
+EOF
+}
+
+config_h_append_linux_pty() {
+    cat <<EOF >> "$1"
+
+/*
+ * Linux openpty(3) compatibility
+ */
+#include <pty.h>
+EOF
+}
+
+config_h_create() {
+    cat <<EOF > "$1"
+#ifndef _CONFIG_H
+#define _CONFIG_H
+EOF
+
+    if [ "$OS" = "Darwin" ]; then
+        config_h_append_darwin_endian "$1"
+    else
+        config_h_append_generic_endian "$1"
+    fi
+
+    if [ "$OS" = "Linux" ]; then
+        config_h_append_linux_pty "$1"
+    else
+        config_h_append_bsd_pty "$1"
+    fi
+
+    cat <<EOF >> "$1"
+
+#endif /* _CONFIG_H */
+EOF
+}
+
+build_mk_append_generic() {
+    cat <<'EOF' >> "$1"
+LDFLAGS_SO	= -shared -Wl,-soname=$(SONAME)
+
+STATIC		= lib$(LIBNAME).a
+
+SONAME_SHORT	= lib$(LIBNAME).so
+SONAME		= $(SONAME_SHORT).$(VERSION_MAJOR)
+SONAME_FULL	= $(SONAME_SHORT).$(VERSION)
+
+EOF
+
+    cat <<EOF >> "$1"
+PREFIX		= $PREFIX
+EOF
+}
+
+build_mk_append_man_generic() {
+    cat <<'EOF' >> "$1"
+MANDIR		= $(PREFIX)/share/man
+EOF
+}
+
+build_mk_append_man_bsd() {
+    if [ "$PREFIX" = "/usr" ]; then
+        local mandir='$(PREFIX)/share/man'
+    else
+        local mandir='$(PREFIX)/man'
+    fi
+
+    cat <<EOF >> "$1"
+MANDIR		= $mandir
+EOF
+}
+
+build_mk_append_darwin() {
+    cat <<'EOF' >> "$1"
+LDFLAGS_SO	= -dynamiclib -current_version $(VERSION)
+
+STATIC      = lib$(LIBNAME).a
+
+SONAME_SHORT	= lib$(LIBNAME).dylib
+SONAME		= lib$(LIBNAME).$(VERSION_MAJOR).dylib
+SONAME_FULL	= lib$(LIBNAME).$(VERSION).dylib
+
+EOF
+
+    cat <<EOF >> "$1"
+PREFIX      = $PREFIX
+EOF
+}
+
+build_mk_create() {
+    if [ "$DEBUG" = 1 ]; then
+        cat <<'EOF' > "$1"
+CFLAGS_DEBUG	= -g -fno-inline
+EOF
+    else
+        cat <<'EOF' > "$1"
+CFLAGS_DEBUG	=
+EOF
+    fi
+
+    if [ "$OS" = "Darwin" ]; then
+        build_mk_append_darwin "$1"
+    else
+        build_mk_append_generic "$1"
+    fi
+
+    case $OS in
+        FreeBSD|NetBSD|OpenBSD)
+            build_mk_append_man_bsd "$1"
+        ;;
+
+        *)
+            build_mk_append_man_generic "$1"
+        ;;
+    esac
+
+    cat <<'EOF' >> "$1"
+CFLAGS_WARN	= -Wall
+CFLAGS_OPT	= -O2
+CFLAGS_GEN	= -fPIC
+CFLAGS		= $(CFLAGS_DEBUG) $(CFLAGS_WARN) $(CFLAGS_OPT) $(CFLAGS_GEN)
+
+AR		= $(CROSS)ar
+RANLIB		= $(CROSS)ranlib
+
+RM		= /bin/rm
+LN		= /bin/ln
+RMDIR		= /bin/rmdir
+INSTALL		= /usr/bin/install
+EOF
+}
+
+parse_opt() {
+    local _IFS="$IFS"
+
+    IFS="="
+
+    set -- $1
+
+    echo $2
+
+    IFS="$_IFS"
+}
+
+for arg in $@; do
+    case $arg in
+        --enable-debug)
+            DEBUG=1
+        ;;
+
+        --prefix=*)
+            PREFIX="`parse_opt "$arg"`"
+        ;;
+    esac
+done
+
+if [ ! -d "mk" ]; then
+    mkdir -m 0755 mk
+fi
+
+config_h_create "src/config.h"
+build_mk_create "mk/build.mk"
