@@ -2,7 +2,13 @@
 An AX.25 V2.2 Stack Outside of the Kernel
 
 Original: https://scm.xan.host
- 
+
+#### Build
+sh configure   
+make   
+sudo make install   
+sudo ldconfig   
+
 #### Examples
 **/etc/patty/pattyd.conf**
 ```
